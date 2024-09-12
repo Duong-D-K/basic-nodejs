@@ -1,0 +1,252 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+
+model Gender {
+  id                      String        @id @default(uuid())
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  name                    String
+
+  doctors                 Doctor[]      @relation("GenderToDoctor")
+  patients                Patient[]     @relation("GenderToPatient")
+}
+
+model Role {
+  id                      String        @id @default(uuid())
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  name                    String
+
+  doctors                 Doctor[]      @relation("RoleToDoctor")
+}
+
+model Position {
+  id                      String        @id @default(uuid())
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  name                    String
+
+  doctors                 Doctor[]      @relation("PositionToDoctor")
+}
+
+model Status {
+  id                      String        @id @default(uuid())
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  name                    String
+
+  bookings                Booking[]     @relation("StatusToBooking")
+
+}
+
+model Price {
+  id                      String        @id @default(uuid())
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  name                    String
+
+  doctors                 Doctor[]      @relation("PriceToDoctor")
+
+}
+
+model Payment {
+  id                      String        @id @default(uuid())
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  name                    String
+
+  doctors                 Doctor[]      @relation("PaymentToDoctor")
+
+}
+
+model Time {
+  id                      String        @id @default(uuid())
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  name                    String
+  ordinal                 Int
+
+  schedules               Schedule[]    @relation("TimeToSchedule")
+  bookings                Booking[]     @relation("TimeToBooking")
+}
+
+model Clinic {
+  id                      String        @id @default(uuid())
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  name                    String
+  address                 String
+  image                   Bytes
+  contentHTML             String        @db.LongText
+  contentMarkdown         String        @db.LongText
+
+  // provinceId String
+  // province Province @relation("ProvinceToClinic", fields: [provinceId], references: [id])
+
+  // districtId String
+  // district District @relation("DistrictToClinic", fields: [districtId], references: [id])
+
+
+  doctors                 Doctor[]      @relation("ClinicToDoctor")
+}
+
+model Specialty {
+  id                      String        @id @default(uuid())
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  name                    String
+  image                   Bytes
+  contentHTML             String        @db.LongText
+  contentMarkdown         String        @db.LongText
+
+  doctors                 Doctor[]      @relation("SpecialtyToDoctor")
+}
+
+model Province {
+  id                      String        @id @default(uuid())
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  name                    String
+
+  districts District[]                  @relation("ProvinceToDistrict")
+
+  // doctors Doctor[]                   @relation("ProvinceToDoctor")
+
+  // clinics Clinic[]                   @relation("ProvinceToClinic")
+
+}
+
+model District {
+  id                      String        @id @default(uuid())
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  name                    String
+
+  provinceId              String
+  province                Province      @relation("ProvinceToDistrict", fields: [provinceId], references: [id])
+
+  // clinics Clinic[] @relation("DistrictToClinic")
+
+}
+
+model Doctor {
+  id                      String        @id @default(uuid())
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  name                    String
+  email                   String        @unique
+  password                String
+  phoneNumber             String
+  image                   Bytes
+  introduction            String
+  note                    String
+  contentHTML             String        @db.LongText
+  contentMarkdown         String        @db.LongText
+
+  genderId                String
+  gender                  Gender        @relation("GenderToDoctor", fields: [genderId], references: [id])
+
+  roleId                  String
+  role                    Role          @relation("RoleToDoctor", fields: [roleId], references: [id])
+
+  positionId              String
+  position                Position      @relation("PositionToDoctor", fields: [positionId], references: [id])
+
+  // provinceId String
+  // province Province @relation("ProvinceToDoctor", fields: [provinceId], references: [id])
+
+  specialtyId             String
+  specialty               Specialty     @relation("SpecialtyToDoctor", fields: [specialtyId], references: [id])
+
+  clinicId                String
+  clinic                  Clinic        @relation("ClinicToDoctor", fields: [clinicId], references: [id])
+
+  priceId                 String
+  price                   Price         @relation("PriceToDoctor", fields: [priceId], references: [id])
+
+  paymentId               String
+  payment                 Payment       @relation("PaymentToDoctor", fields: [paymentId], references: [id])
+
+
+  schedules               Schedule[]    @relation("DoctorToSchedule")
+  bookings                Booking[]     @relation("DoctorToBooking")
+
+}
+
+model Schedule {
+  id                      String        @id @default(uuid())
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  date                    String
+  isBooked                Boolean       
+  
+  doctorId                String
+  doctor                  Doctor        @relation("DoctorToSchedule", fields: [doctorId], references: [id])
+
+  timeId                  String
+  time                    Time          @relation("TimeToSchedule", fields: [timeId], references: [id])
+}
+
+model Patient {
+  id                      String        @id @default(uuid())
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  email                   String        @unique
+  name                    String
+  birthday                String
+  address                 String
+  phoneNumber             String
+  isActive                Boolean       @default(true)
+
+
+  genderId                String
+  gender                  Gender        @relation("GenderToPatient", fields: [genderId], references: [id])
+
+
+  bookings                Booking[]     @relation("PatientToBooking")
+  
+}
+
+model Booking {
+  id                      String        @id @default(uuid())
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  reason                  String
+  token                   String
+  date                    String
+
+  statusId                String
+  status                  Status        @relation("StatusToBooking", fields: [statusId], references: [id])
+
+  doctorId                String
+  doctor                  Doctor        @relation("DoctorToBooking", fields: [doctorId], references: [id])
+
+  patientId               String
+  patient                 Patient       @relation("PatientToBooking", fields: [patientId], references: [id])
+
+  timeId                  String
+  time                    Time          @relation("TimeToBooking", fields: [timeId], references: [id])
+}
